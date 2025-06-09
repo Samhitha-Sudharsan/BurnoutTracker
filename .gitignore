@@ -1,0 +1,29 @@
+```
+# Python
+pycache/
+*.pyc
+*.pyd
+*.so
+*.ipynb_checkpoints
+
+# Virtual environment
+venv/
+.env
+env/
+
+# Data files
+# *.csv
+*.xlsx
+*.xls
+
+# IDEs
+.idea/
+.vscode/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+~$*
+```

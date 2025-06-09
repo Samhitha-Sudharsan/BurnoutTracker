@@ -1,0 +1,101 @@
+date,age,major_event_log,mood,anxiety,energy,burnout,journal_entry,sleep,after_sleep,steps,water,caffeine,work,outfit,music_genre,volume,music_time,period,phase,symptom
+23-03-2024,20,Stressful exam period,6,5,2,Drained,A bit tired but managing.,7.7,Kind of,5000-8000,<1L,None,8+ hrs,"Comfy (PJs, oversized)",Bollywood|Sad Pop,Low (background),Morning,No,Luteal,Cramps|Food cravings
+09-04-2024,24,None,1,3,2,Drained,A bit tired but managing.,6.8,Kind of,5000-8000,1.5-2.5L,2 cups,5-8 hrs,"Casual (jeans, tee)",Lofi,Low (background),Afternoon,Yes,No clue,None
+16-03-2024,35,None,1,9,3,Not at all,A bit tired but managing.,8,No,2000-5000,2.5L+,None,<2 hrs,Athletic/Activewear,Sad Pop|Carnatic,Medium,Afternoon,Yes,Follicular,Food cravings|Cramps
+11-02-2024,19,Stressful exam period,10,4,3,Drained,A bit tired but managing.,9.3,No,<2000,2.5L+,1 cup,2-5 hrs,"Casual (jeans, tee)",Sad Pop|Happy Vibey pop,Medium,Night,Not sure,PMS,Food cravings|Low energy
+08-05-2024,28,Stressful exam period,10,9,6,Not at all,Feeling good today.,6.6,Yes,<2000,1-1.5L,None,5-8 hrs,"Comfy (PJs, oversized)",Dance music|Lofi|Carnatic,Loud,Afternoon,No,Luteal,None
+17-01-2024,26,Stressful exam period,6,8,4,Mild tiredness,Feeling good today.,6.6,Kind of,5000-8000,1.5-2.5L,1 cup,8+ hrs,Athletic/Activewear,K-pop / J-pop,Loud,Morning,Yes,Ovulation,None
+25-03-2024,29,None,8,6,4,Mild tiredness,Feeling good today.,9.4,Yes,5000-8000,<1L,3+ cups,2-5 hrs,"Casual (jeans, tee)",Western classical|Rock|Happy Vibey pop,Loud,Night,Not sure,PMS,None
+14-02-2024,20,Stressful exam period,1,4,2,Mild tiredness,Feeling good today.,8.2,Kind of,<2000,<1L,3+ cups,8+ hrs,Athletic/Activewear,Sad Pop,Medium,Night,Yes,Follicular,Food cravings
+16-04-2024,27,None,4,5,2,Mild tiredness,Feeling good today.,6.3,No,<2000,2.5L+,None,2-5 hrs,Athletic/Activewear,Lofi,Low (background),Night,Not sure,No clue,None
+03-06-2024,34,None,5,10,6,Drained,A bit tired but managing.,7.8,No,<2000,1.5-2.5L,2 cups,<2 hrs,Athletic/Activewear,Rock,Medium,Afternoon,Yes,Ovulation,Cramps|Food cravings|Low energy
+04-05-2024,25,Stressful exam period,1,4,2,Mild tiredness,A bit tired but managing.,6.3,No,8000+,1-1.5L,2 cups,2-5 hrs,Athletic/Activewear,Lofi|K-pop / J-pop,Medium,Afternoon,Not sure,No clue,Low energy
+14-04-2024,35,Stressful exam period,1,8,7,Mild tiredness,Feeling good today.,6.3,Kind of,<2000,1-1.5L,None,5-8 hrs,Athletic/Activewear,Dance music|Bollywood,Medium,Afternoon,Not sure,Follicular,Low energy|Cramps
+23-01-2024,26,None,6,9,3,Drained,A bit tired but managing.,7.4,Yes,8000+,1.5-2.5L,3+ cups,2-5 hrs,"Casual (jeans, tee)",Carnatic|Western classical,Loud,Morning,Yes,Luteal,Low energy|Cramps
+02-04-2024,20,Stressful exam period,10,1,4,Drained,A bit tired but managing.,4.1,No,5000-8000,<1L,1 cup,8+ hrs,"Casual (jeans, tee)",EDM,Low (background),Morning,Yes,PMS,Low energy|Cramps
+25-04-2024,27,None,2,8,6,Full-on burnout,A bit tired but managing.,4.4,Yes,5000-8000,<1L,2 cups,8+ hrs,Athletic/Activewear,Rock|Happy Vibey pop|Lofi,Loud,Morning,No,Luteal,Cramps|Low energy
+14-01-2024,25,None,4,8,4,Drained,A bit tired but managing.,6.2,Kind of,8000+,1.5-2.5L,3+ cups,<2 hrs,"Casual (jeans, tee)",Western classical|K-pop / J-pop,Low (background),Afternoon,Yes,PMS,Cramps
+01-05-2024,26,Stressful exam period,8,3,9,Full-on burnout,A bit tired but managing.,5.5,Yes,8000+,1.5-2.5L,3+ cups,<2 hrs,"Comfy (PJs, oversized)",Happy Vibey pop,Medium,Night,Not sure,Ovulation,Food cravings
+08-02-2024,27,Stressful exam period,6,8,4,Not at all,Feeling good today.,7.5,Kind of,5000-8000,1.5-2.5L,None,8+ hrs,Athletic/Activewear,Happy Vibey pop|Bollywood|Dance music,Low (background),Afternoon,No,No clue,Food cravings|Low energy
+01-01-2024,29,None,8,2,6,Not at all,A bit tired but managing.,5.6,No,2000-5000,2.5L+,None,8+ hrs,"Casual (jeans, tee)",Bollywood|Happy Vibey pop|Sad Pop,Low (background),Afternoon,Not sure,Ovulation,None
+20-02-2024,31,None,3,10,7,Drained,A bit tired but managing.,4.9,Kind of,2000-5000,<1L,2 cups,5-8 hrs,"Comfy (PJs, oversized)",Dance music|Sad Pop|Bollywood,Low (background),Night,Yes,PMS,Cramps|Food cravings
+07-03-2024,27,None,1,7,6,Full-on burnout,A bit tired but managing.,9.2,No,2000-5000,<1L,2 cups,5-8 hrs,Athletic/Activewear,K-pop / J-pop|Western classical,Medium,Morning,Not sure,No clue,None
+25-04-2024,31,None,9,10,10,Full-on burnout,Feeling good today.,6.7,Yes,2000-5000,1.5-2.5L,3+ cups,5-8 hrs,"Comfy (PJs, oversized)",Carnatic|Bollywood|Sad Pop,Low (background),Night,Yes,PMS,Food cravings
+17-03-2024,24,None,6,3,3,Drained,Feeling good today.,7.1,No,8000+,2.5L+,3+ cups,<2 hrs,Formal (workwear),Carnatic|Sad Pop|EDM,Medium,Afternoon,Not sure,Follicular,Food cravings|Cramps|Low energy
+27-04-2024,33,Stressful exam period,9,4,2,Not at all,A bit tired but managing.,4.9,Kind of,5000-8000,2.5L+,None,8+ hrs,Athletic/Activewear,Rock|Other,Medium,Night,No,Follicular,None
+14-03-2024,29,Stressful exam period,5,4,9,Not at all,Feeling good today.,6.2,Yes,5000-8000,2.5L+,None,2-5 hrs,"Comfy (PJs, oversized)",Carnatic|Bollywood,Medium,Night,No,No clue,Low energy|Food cravings
+03-03-2024,32,Stressful exam period,8,1,4,Mild tiredness,A bit tired but managing.,7.2,Yes,8000+,<1L,None,<2 hrs,Athletic/Activewear,Sad Pop,Low (background),Afternoon,No,PMS,Low energy
+04-02-2024,27,Stressful exam period,2,2,10,Mild tiredness,Feeling good today.,5.3,No,<2000,2.5L+,1 cup,8+ hrs,Formal (workwear),Carnatic|Rock|Western classical,Loud,Afternoon,No,Follicular,None
+05-06-2024,24,None,5,5,2,Drained,Feeling good today.,7.6,No,<2000,2.5L+,2 cups,2-5 hrs,Formal (workwear),Happy Vibey pop|Dance music,Medium,Night,Not sure,No clue,Low energy|Cramps
+06-02-2024,32,None,3,2,9,Mild tiredness,A bit tired but managing.,6.1,Yes,<2000,2.5L+,None,5-8 hrs,"Casual (jeans, tee)",Other,Low (background),Morning,Not sure,Ovulation,Food cravings|Cramps
+16-03-2024,34,Stressful exam period,6,4,1,Mild tiredness,Feeling good today.,6.6,No,2000-5000,1.5-2.5L,3+ cups,2-5 hrs,Athletic/Activewear,Western classical|Rock,Low (background),Morning,Not sure,No clue,Low energy|Cramps
+24-05-2024,20,Stressful exam period,2,6,4,Not at all,A bit tired but managing.,6.1,Kind of,<2000,1.5-2.5L,3+ cups,8+ hrs,"Casual (jeans, tee)",K-pop / J-pop,Medium,Night,No,Ovulation,None
+16-03-2024,24,Stressful exam period,8,8,6,Full-on burnout,A bit tired but managing.,9.8,Kind of,8000+,1-1.5L,1 cup,2-5 hrs,"Comfy (PJs, oversized)",Bollywood|Rock|Western classical,Loud,Night,No,Ovulation,None
+24-05-2024,18,Stressful exam period,8,10,4,Full-on burnout,A bit tired but managing.,7,Kind of,<2000,2.5L+,1 cup,2-5 hrs,Athletic/Activewear,Bollywood,Low (background),Night,No,Ovulation,Food cravings
+15-03-2024,31,None,3,2,2,Not at all,Feeling good today.,5.4,Kind of,<2000,2.5L+,2 cups,8+ hrs,Athletic/Activewear,Bollywood|Dance music,Low (background),Night,Not sure,PMS,Cramps|Low energy|Food cravings
+14-02-2024,30,Stressful exam period,5,5,1,Full-on burnout,Feeling good today.,8.2,Yes,<2000,<1L,2 cups,5-8 hrs,"Casual (jeans, tee)",Carnatic|Sad Pop|Rock,Loud,Night,Not sure,Ovulation,None
+21-01-2024,29,Stressful exam period,1,1,1,Full-on burnout,Feeling good today.,5.2,Yes,8000+,<1L,None,5-8 hrs,"Comfy (PJs, oversized)",Sad Pop|K-pop / J-pop|Other,Low (background),Night,No,Follicular,None
+11-05-2024,19,Stressful exam period,3,5,3,Full-on burnout,Feeling good today.,7.3,Kind of,<2000,1.5-2.5L,1 cup,5-8 hrs,Formal (workwear),Carnatic|Happy Vibey pop,Loud,Night,No,Luteal,Cramps|Low energy
+20-06-2024,27,Stressful exam period,7,10,1,Full-on burnout,Feeling good today.,4.1,Kind of,8000+,2.5L+,3+ cups,<2 hrs,Formal (workwear),EDM,Medium,Afternoon,No,No clue,Cramps
+07-05-2024,35,Stressful exam period,1,7,5,Full-on burnout,Feeling good today.,5,No,8000+,<1L,2 cups,<2 hrs,"Comfy (PJs, oversized)",Western classical,Low (background),Morning,Not sure,PMS,Food cravings
+22-01-2024,25,Stressful exam period,5,8,1,Drained,A bit tired but managing.,7.3,Kind of,<2000,1.5-2.5L,3+ cups,5-8 hrs,Formal (workwear),Sad Pop|Bollywood,Loud,Night,Not sure,Ovulation,None
+12-05-2024,32,Stressful exam period,2,7,10,Drained,A bit tired but managing.,8.1,Kind of,5000-8000,2.5L+,None,5-8 hrs,"Comfy (PJs, oversized)",Rock|Bollywood|Dance music,Medium,Night,Not sure,PMS,Food cravings|Low energy|Cramps
+24-06-2024,31,Stressful exam period,4,4,1,Not at all,A bit tired but managing.,7.3,Kind of,5000-8000,2.5L+,1 cup,2-5 hrs,Formal (workwear),Bollywood,Loud,Night,No,PMS,None
+16-03-2024,33,Stressful exam period,7,7,5,Full-on burnout,Feeling good today.,6.8,Yes,5000-8000,2.5L+,1 cup,<2 hrs,"Comfy (PJs, oversized)",K-pop / J-pop|Carnatic,Medium,Night,No,Follicular,None
+27-04-2024,22,None,6,4,2,Full-on burnout,A bit tired but managing.,6.5,Yes,2000-5000,1.5-2.5L,3+ cups,2-5 hrs,"Casual (jeans, tee)",Western classical|Sad Pop,Low (background),Night,Not sure,No clue,Low energy
+12-06-2024,30,Stressful exam period,1,4,7,Not at all,A bit tired but managing.,4.8,No,<2000,1.5-2.5L,3+ cups,2-5 hrs,Athletic/Activewear,EDM,Medium,Morning,Yes,Follicular,None
+19-02-2024,35,None,3,7,5,Not at all,A bit tired but managing.,5.9,Kind of,2000-5000,1.5-2.5L,2 cups,<2 hrs,"Casual (jeans, tee)",Bollywood|Carnatic|Lofi,Loud,Afternoon,Not sure,Ovulation,None
+23-02-2024,31,Stressful exam period,9,2,10,Not at all,Feeling good today.,6.3,No,<2000,1-1.5L,None,2-5 hrs,Formal (workwear),Sad Pop|Dance music|Other,Medium,Morning,Not sure,PMS,None
+02-03-2024,34,Stressful exam period,5,3,8,Full-on burnout,Feeling good today.,8.6,Yes,<2000,1-1.5L,2 cups,5-8 hrs,"Comfy (PJs, oversized)",Lofi|Dance music,Loud,Afternoon,Not sure,Follicular,Low energy
+25-03-2024,18,None,7,10,10,Mild tiredness,A bit tired but managing.,7.5,Kind of,5000-8000,1-1.5L,3+ cups,8+ hrs,"Comfy (PJs, oversized)",Other|Carnatic,Loud,Night,Yes,Follicular,Cramps|Low energy|Food cravings
+17-01-2024,25,Stressful exam period,9,5,6,Mild tiredness,A bit tired but managing.,4.4,No,<2000,2.5L+,1 cup,2-5 hrs,"Casual (jeans, tee)",EDM,Low (background),Night,Yes,No clue,Low energy|Food cravings|Cramps
+16-05-2024,19,None,5,3,4,Drained,Feeling good today.,7.5,No,2000-5000,1.5-2.5L,None,8+ hrs,Formal (workwear),Western classical|EDM|Carnatic,Low (background),Night,Yes,Follicular,None
+11-06-2024,35,Stressful exam period,1,5,7,Drained,A bit tired but managing.,6.4,Yes,<2000,1.5-2.5L,3+ cups,<2 hrs,Formal (workwear),Other,Low (background),Night,No,Ovulation,Food cravings|Cramps
+17-05-2024,31,Stressful exam period,8,3,10,Not at all,A bit tired but managing.,6,Kind of,<2000,1-1.5L,None,8+ hrs,Athletic/Activewear,Happy Vibey pop,Loud,Afternoon,Not sure,Luteal,None
+17-02-2024,30,None,1,10,10,Drained,A bit tired but managing.,7.9,No,8000+,1.5-2.5L,3+ cups,5-8 hrs,Formal (workwear),Happy Vibey pop,Low (background),Morning,No,PMS,None
+03-03-2024,35,Stressful exam period,4,10,10,Full-on burnout,A bit tired but managing.,8.5,Kind of,<2000,2.5L+,2 cups,2-5 hrs,"Casual (jeans, tee)",Happy Vibey pop|Lofi|Carnatic,Loud,Night,No,Ovulation,Low energy
+22-02-2024,24,Stressful exam period,10,9,7,Full-on burnout,A bit tired but managing.,8.4,No,2000-5000,2.5L+,1 cup,8+ hrs,"Comfy (PJs, oversized)",EDM|Happy Vibey pop|Other,Medium,Night,Not sure,Follicular,Food cravings
+13-05-2024,30,Stressful exam period,4,8,1,Drained,A bit tired but managing.,5.7,No,5000-8000,1-1.5L,1 cup,<2 hrs,"Comfy (PJs, oversized)",Bollywood,Medium,Morning,Yes,PMS,None
+19-03-2024,22,Stressful exam period,7,6,3,Not at all,Feeling good today.,6.5,No,5000-8000,1-1.5L,1 cup,2-5 hrs,"Casual (jeans, tee)",EDM|Other|K-pop / J-pop,Low (background),Afternoon,Not sure,Follicular,None
+14-04-2024,19,Stressful exam period,8,10,9,Not at all,Feeling good today.,7.5,Kind of,<2000,1-1.5L,3+ cups,5-8 hrs,Athletic/Activewear,Sad Pop|Other|Dance music,Loud,Afternoon,Not sure,Ovulation,None
+28-05-2024,21,None,3,2,7,Not at all,A bit tired but managing.,8.5,Yes,5000-8000,2.5L+,2 cups,5-8 hrs,Athletic/Activewear,Happy Vibey pop|Western classical|Dance music,Low (background),Afternoon,Not sure,Luteal,Low energy|Food cravings
+26-02-2024,26,None,7,6,10,Mild tiredness,Feeling good today.,6.3,No,<2000,2.5L+,1 cup,<2 hrs,"Casual (jeans, tee)",Carnatic,Low (background),Afternoon,No,No clue,Low energy|Food cravings|Cramps
+02-04-2024,34,Stressful exam period,9,7,4,Drained,A bit tired but managing.,6.7,Yes,<2000,2.5L+,3+ cups,<2 hrs,Athletic/Activewear,Bollywood|Lofi|Rock,Loud,Afternoon,Not sure,Luteal,Cramps
+26-04-2024,18,Stressful exam period,3,10,7,Drained,Feeling good today.,5.3,No,2000-5000,1-1.5L,3+ cups,<2 hrs,Athletic/Activewear,Rock|Lofi,Loud,Morning,No,PMS,None
+26-04-2024,23,Stressful exam period,7,3,5,Not at all,A bit tired but managing.,5.2,Yes,8000+,<1L,1 cup,2-5 hrs,"Comfy (PJs, oversized)",Other|Rock,Medium,Afternoon,No,No clue,None
+21-04-2024,27,Stressful exam period,10,2,5,Not at all,A bit tired but managing.,8.2,Kind of,2000-5000,2.5L+,2 cups,2-5 hrs,"Casual (jeans, tee)",Happy Vibey pop|Other,Medium,Afternoon,Yes,PMS,None
+10-05-2024,30,None,8,3,4,Full-on burnout,A bit tired but managing.,9,Kind of,<2000,<1L,1 cup,2-5 hrs,"Casual (jeans, tee)",Lofi,Medium,Morning,Not sure,Follicular,None
+04-03-2024,33,None,8,10,1,Full-on burnout,A bit tired but managing.,6.9,Yes,5000-8000,1-1.5L,1 cup,2-5 hrs,Formal (workwear),Sad Pop|Lofi|Rock,Loud,Night,Not sure,Luteal,None
+20-03-2024,27,Stressful exam period,8,8,1,Not at all,A bit tired but managing.,8.5,No,5000-8000,1-1.5L,1 cup,8+ hrs,"Comfy (PJs, oversized)",K-pop / J-pop,Low (background),Afternoon,Not sure,Follicular,Food cravings
+18-05-2024,27,Stressful exam period,10,3,8,Mild tiredness,A bit tired but managing.,7.5,Yes,2000-5000,<1L,2 cups,<2 hrs,Athletic/Activewear,Happy Vibey pop|K-pop / J-pop,Medium,Night,No,Luteal,Cramps
+26-03-2024,26,Stressful exam period,5,7,9,Not at all,Feeling good today.,6,Kind of,5000-8000,1.5-2.5L,None,2-5 hrs,"Casual (jeans, tee)",EDM,Loud,Afternoon,Yes,No clue,Low energy
+15-02-2024,31,Stressful exam period,7,9,6,Drained,A bit tired but managing.,7.5,Yes,8000+,1-1.5L,3+ cups,8+ hrs,Athletic/Activewear,Bollywood|K-pop / J-pop|Rock,Low (background),Afternoon,Not sure,No clue,Low energy|Food cravings|Cramps
+05-04-2024,21,None,3,5,9,Mild tiredness,A bit tired but managing.,9.3,Yes,5000-8000,1-1.5L,1 cup,2-5 hrs,"Comfy (PJs, oversized)",Other,Low (background),Morning,Not sure,Luteal,None
+18-02-2024,35,Stressful exam period,9,4,7,Full-on burnout,A bit tired but managing.,6.9,Kind of,5000-8000,<1L,None,<2 hrs,"Comfy (PJs, oversized)",Dance music|Sad Pop|Western classical,Low (background),Morning,Yes,No clue,None
+26-06-2024,31,Stressful exam period,5,7,6,Drained,A bit tired but managing.,9.3,No,2000-5000,1.5-2.5L,1 cup,<2 hrs,"Comfy (PJs, oversized)",Happy Vibey pop|Rock,Low (background),Morning,No,Follicular,Cramps|Low energy
+09-01-2024,19,Stressful exam period,9,9,3,Mild tiredness,A bit tired but managing.,3.1,No,5000-8000,1-1.5L,2 cups,2-5 hrs,"Comfy (PJs, oversized)",Carnatic|Happy Vibey pop|Western classical,Medium,Morning,No,Ovulation,None
+13-01-2024,20,Stressful exam period,9,9,7,Full-on burnout,Feeling good today.,8.2,Yes,2000-5000,2.5L+,2 cups,5-8 hrs,Formal (workwear),Sad Pop|Other|EDM,Medium,Morning,Yes,No clue,None
+19-04-2024,31,Stressful exam period,10,6,2,Full-on burnout,A bit tired but managing.,7.1,No,5000-8000,1.5-2.5L,None,2-5 hrs,"Comfy (PJs, oversized)",K-pop / J-pop|EDM,Low (background),Afternoon,Yes,PMS,None
+16-01-2024,18,Stressful exam period,5,8,6,Mild tiredness,A bit tired but managing.,6.6,No,<2000,<1L,1 cup,2-5 hrs,Athletic/Activewear,Dance music,Medium,Night,No,Ovulation,Food cravings|Cramps
+13-05-2024,32,Stressful exam period,10,4,10,Not at all,A bit tired but managing.,7.1,Yes,5000-8000,1.5-2.5L,None,8+ hrs,"Comfy (PJs, oversized)",Dance music|Carnatic,Medium,Afternoon,No,PMS,None
+22-05-2024,26,None,4,4,10,Drained,A bit tired but managing.,4,No,2000-5000,1.5-2.5L,1 cup,2-5 hrs,Formal (workwear),Lofi|Happy Vibey pop,Medium,Morning,Not sure,Ovulation,Low energy
+28-05-2024,33,None,5,9,6,Full-on burnout,A bit tired but managing.,6.7,Kind of,8000+,<1L,3+ cups,2-5 hrs,Formal (workwear),Western classical,Loud,Night,Not sure,Ovulation,Food cravings|Cramps|Low energy
+27-05-2024,23,Stressful exam period,6,9,7,Full-on burnout,A bit tired but managing.,7.5,No,8000+,<1L,None,5-8 hrs,Athletic/Activewear,Carnatic|K-pop / J-pop,Low (background),Morning,Yes,No clue,Food cravings
+01-02-2024,25,None,1,9,10,Not at all,A bit tired but managing.,9.2,Yes,8000+,1-1.5L,3+ cups,5-8 hrs,"Casual (jeans, tee)",EDM|Happy Vibey pop|Sad Pop,Loud,Afternoon,No,Ovulation,None
+12-02-2024,19,Stressful exam period,9,4,6,Mild tiredness,A bit tired but managing.,6.2,Yes,<2000,2.5L+,None,2-5 hrs,"Comfy (PJs, oversized)",EDM,Medium,Afternoon,Not sure,Ovulation,Food cravings
+12-05-2024,28,Stressful exam period,10,1,2,Not at all,Feeling good today.,5.8,Kind of,2000-5000,1.5-2.5L,1 cup,5-8 hrs,Formal (workwear),Rock|Lofi|Sad Pop,Medium,Afternoon,Not sure,No clue,Low energy
+15-03-2024,32,Stressful exam period,7,4,7,Mild tiredness,A bit tired but managing.,6.2,No,8000+,1.5-2.5L,3+ cups,8+ hrs,"Casual (jeans, tee)",EDM|Lofi|Carnatic,Low (background),Night,Not sure,No clue,Food cravings
+23-02-2024,28,Stressful exam period,4,7,9,Full-on burnout,A bit tired but managing.,8.4,No,5000-8000,2.5L+,3+ cups,8+ hrs,"Casual (jeans, tee)",Other,Medium,Night,Not sure,Follicular,None
+16-04-2024,34,Stressful exam period,2,2,5,Drained,A bit tired but managing.,7.5,Yes,8000+,1-1.5L,3+ cups,8+ hrs,Formal (workwear),Bollywood|Sad Pop,Medium,Afternoon,Not sure,No clue,None
+22-06-2024,19,Stressful exam period,9,2,2,Mild tiredness,A bit tired but managing.,6.2,Kind of,<2000,<1L,None,<2 hrs,Formal (workwear),EDM,Loud,Night,Not sure,PMS,None
+02-05-2024,25,None,2,6,10,Mild tiredness,Feeling good today.,7.8,Yes,5000-8000,2.5L+,None,<2 hrs,Formal (workwear),Sad Pop|K-pop / J-pop,Loud,Afternoon,Not sure,Ovulation,Food cravings
+11-06-2024,33,Stressful exam period,9,10,5,Full-on burnout,A bit tired but managing.,7.1,Yes,2000-5000,1-1.5L,1 cup,<2 hrs,Formal (workwear),Lofi|Other|Happy Vibey pop,Low (background),Night,No,No clue,None
+23-01-2024,22,None,7,5,9,Not at all,A bit tired but managing.,8.5,Yes,5000-8000,1.5-2.5L,3+ cups,5-8 hrs,Formal (workwear),EDM|Happy Vibey pop,Medium,Morning,Not sure,Ovulation,Cramps
+21-05-2024,35,Stressful exam period,4,9,5,Drained,Feeling good today.,5.9,Kind of,8000+,1.5-2.5L,3+ cups,5-8 hrs,Athletic/Activewear,Western classical|Happy Vibey pop|EDM,Low (background),Afternoon,No,Luteal,None
+07-02-2024,22,Stressful exam period,3,10,10,Drained,Feeling good today.,6.5,Yes,2000-5000,1.5-2.5L,None,8+ hrs,Formal (workwear),Rock|EDM,Low (background),Morning,No,No clue,Cramps
+19-03-2024,35,Stressful exam period,4,6,6,Not at all,A bit tired but managing.,6.4,No,8000+,<1L,None,<2 hrs,"Comfy (PJs, oversized)",Carnatic|Bollywood|Dance music,Loud,Morning,No,Ovulation,None
+09-05-2024,19,Stressful exam period,5,8,3,Mild tiredness,A bit tired but managing.,4.8,Kind of,8000+,<1L,None,8+ hrs,"Casual (jeans, tee)",K-pop / J-pop,Medium,Afternoon,Not sure,PMS,Food cravings|Cramps|Low energy
+10-05-2024,28,Stressful exam period,8,4,3,Mild tiredness,Feeling good today.,7.4,No,<2000,1-1.5L,None,8+ hrs,Athletic/Activewear,K-pop / J-pop|Happy Vibey pop,Low (background),Night,No,Follicular,Food cravings|Cramps
+06-01-2024,24,Stressful exam period,8,4,3,Not at all,A bit tired but managing.,7.4,Yes,2000-5000,2.5L+,None,5-8 hrs,Formal (workwear),Bollywood,Medium,Night,Yes,PMS,None
+27-05-2024,28,Stressful exam period,7,7,8,Full-on burnout,A bit tired but managing.,7,No,5000-8000,1-1.5L,2 cups,8+ hrs,Athletic/Activewear,Sad Pop|Lofi,Loud,Morning,Not sure,No clue,Cramps
+13-06-2024,21,Stressful exam period,6,5,8,Not at all,Feeling good today.,6.6,No,2000-5000,1.5-2.5L,2 cups,<2 hrs,"Comfy (PJs, oversized)",Lofi,Medium,Morning,Yes,Ovulation,None
