@@ -1,9 +1,27 @@
 import pandas as pd
+from datetime import date
+from cycle_tracking import calculate_menstrual_phase
 
 # Load CSV
 df = pd.read_csv("data.csv")
+df['date'] = df['date'].astype(str).str.replace('–', '-')
+# Convert 'date' column to datetime objects first, then to date objects
+# Specify dayfirst=True to handle DD-MM-YYYY format
+df['date'] = pd.to_datetime(df['date'], dayfirst=True).dt.date
+
+# --- Menstrual Cycle Tracking Integration Setup ---
+# For batch processing of historical data in data_cleaning.py,
+# we'll use a placeholder/average cycle start and length.
+# IMPORTANT: Adjust this `sample_cycle_start_date` to reflect the general period start
+# date relevant to your `data.csv` entries, so phases make sense.
+# For example, if your data.csv entries are from 2024, set this to a date in 2024.
+# If your data is from multiple years, pick a consistent start date for the earliest cycle in your data.
+sample_cycle_start_date = date(2024, 1, 15) # <<< CRITICAL: Adjust this date based on your 'data.csv' earliest entries
+sample_cycle_length = 28 # Average cycle length
 
 # Rename columns for consistency
+# This line should come after initial data loading and basic date conversion,
+# but before specific column processing.
 df.columns = ['date', 'age', 'major_event_log', 'mood', 'anxiety', 'energy', 'burnout', 'journal_entry', 'sleep',
               'refreshed', 'steps', 'water', 'caffeine', 'work', 'outfit', 'music', 'volume', 'music_time',
               'period', 'phase', 'symptom']
@@ -97,6 +115,30 @@ df['work'] = df['work'].map(work_map)
 df['volume'] = df['volume'].map(volume_map)
 df['outfit'] = df['outfit'].map(outfit_map)
 
+# Calculate menstrual phase for each entry
+phases = []
+cycle_days = []
+for index, row in df.iterrows():
+    current_date_entry = row['date']
+    
+    # Ensure cycle_start_date is before or on current_date_entry
+    # If the data entry is before our fixed sample_cycle_start_date,
+    # we'll handle it as 'N/A'. You should ideally set sample_cycle_start_date
+    # to be before or around the start of your actual data.
+    if current_date_entry < sample_cycle_start_date:
+        phase_info = {"phase": "N/A", "cycle_day": None}
+    else:
+        phase_info = calculate_menstrual_phase(
+            current_date_entry,
+            sample_cycle_start_date,
+            sample_cycle_length
+        )
+    phases.append(phase_info['phase'])         # <<< THIS IS NOW CORRECTLY INDENTED
+    cycle_days.append(phase_info['cycle_day']) # <<< THIS IS NOW CORRECTLY INDENTED
+
+df['menstrual_phase'] = phases
+df['cycle_day_of_phase'] = cycle_days # Renamed to avoid confusion with overall cycle day
+
 # Save cleaned data
 df.to_csv("cleaned_data.csv", index=False)
-print("✅ Data cleaned and saved as 'cleaned_data.csv'")
+print("✅ Data cleaned and menstrual phases added to cleaned_data.csv")
