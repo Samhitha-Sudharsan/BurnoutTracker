@@ -22,10 +22,10 @@ date,age,major_event_log,mood,anxiety,energy,burnout,journal_entry,sleep,refresh
 2024-01-23,26,,6,9,3,2.0,A bit tired but managing.,7.4,2.0,3.0,2.0,3,1.0,1.0,Carnatic|Western classical,2.0,Morning,Yes,Luteal,Low energy|Cramps,Follicular,9.0
 2024-04-02,20,Stressful exam period,10,1,4,2.0,A bit tired but managing.,4.1,0.0,2.0,0.0,1,3.0,1.0,EDM,0.0,Morning,Yes,PMS,Low energy|Cramps,Luteal (PMS likely),23.0
 2024-04-25,27,,2,8,6,3.0,A bit tired but managing.,4.4,2.0,2.0,0.0,2,3.0,3.0,Rock|Happy Vibey pop|Lofi,2.0,Morning,No,Luteal,Cramps|Low energy,Luteal,18.0
-2024-01-14,25,,4,8,4,2.0,A bit tired but managing.,6.2,1.0,3.0,2.0,3,0.0,1.0,Western classical|K–pop / J–pop,0.0,Afternoon,Yes,PMS,Cramps,N/A,
+2024-01-14,25,,4,8,4,2.0,A bit tired but managing.,6.2,1.0,3.0,2.0,3,0.0,1.0,Western classical|K–pop / J–pop,0.0,Afternoon,Yes,PMS,Cramps,,
 2024-05-01,26,Stressful exam period,8,3,9,3.0,A bit tired but managing.,5.5,2.0,3.0,2.0,3,0.0,0.0,Happy Vibey pop,1.0,Night,Not sure,Ovulation,Food cravings,Luteal (PMS likely),24.0
 2024-02-08,27,Stressful exam period,6,8,4,0.0,Feeling good today.,7.5,1.0,2.0,2.0,0,3.0,3.0,Happy Vibey pop|Bollywood|Dance music,0.0,Afternoon,No,No clue,Food cravings|Low energy,Luteal (PMS likely),25.0
-2024-01-01,29,,8,2,6,0.0,A bit tired but managing.,5.6,0.0,1.0,3.0,0,3.0,1.0,Bollywood|Happy Vibey pop|Sad Pop,0.0,Afternoon,Not sure,Ovulation,,N/A,
+2024-01-01,29,,8,2,6,0.0,A bit tired but managing.,5.6,0.0,1.0,3.0,0,3.0,1.0,Bollywood|Happy Vibey pop|Sad Pop,0.0,Afternoon,Not sure,Ovulation,,,
 2024-02-20,31,,3,10,7,2.0,A bit tired but managing.,4.9,1.0,1.0,0.0,2,2.0,0.0,Dance music|Sad Pop|Bollywood,0.0,Night,Yes,PMS,Cramps|Food cravings,Follicular,9.0
 2024-03-07,27,,1,7,6,3.0,A bit tired but managing.,9.2,0.0,1.0,0.0,2,2.0,3.0,K–pop / J–pop|Western classical,1.0,Morning,Not sure,No clue,,Luteal (PMS likely),25.0
 2024-04-25,31,,9,10,10,3.0,Feeling good today.,6.7,2.0,1.0,2.0,3,2.0,0.0,Carnatic|Bollywood|Sad Pop,0.0,Night,Yes,PMS,Food cravings,Luteal,18.0
@@ -81,8 +81,8 @@ date,age,major_event_log,mood,anxiety,energy,burnout,journal_entry,sleep,refresh
 2024-04-05,21,,3,5,9,1.0,A bit tired but managing.,9.3,2.0,2.0,1.0,1,1.0,0.0,Other,0.0,Morning,Not sure,Luteal,,Luteal (PMS likely),26.0
 2024-02-18,35,Stressful exam period,9,4,7,3.0,A bit tired but managing.,6.9,1.0,2.0,0.0,0,0.0,0.0,Dance music|Sad Pop|Western classical,0.0,Morning,Yes,No clue,,Follicular,7.0
 2024-06-26,31,Stressful exam period,5,7,6,2.0,A bit tired but managing.,9.3,0.0,1.0,2.0,1,0.0,0.0,Happy Vibey pop|Rock,0.0,Morning,No,Follicular,Cramps|Low energy,Luteal (PMS likely),24.0
-2024-01-09,19,Stressful exam period,9,9,3,1.0,A bit tired but managing.,3.1,0.0,2.0,1.0,2,1.0,0.0,Carnatic|Happy Vibey pop|Western classical,1.0,Morning,No,Ovulation,,N/A,
-2024-01-13,20,Stressful exam period,9,9,7,3.0,Feeling good today.,8.2,2.0,1.0,3.0,2,2.0,2.0,Sad Pop|Other|EDM,1.0,Morning,Yes,No clue,,N/A,
+2024-01-09,19,Stressful exam period,9,9,3,1.0,A bit tired but managing.,3.1,0.0,2.0,1.0,2,1.0,0.0,Carnatic|Happy Vibey pop|Western classical,1.0,Morning,No,Ovulation,,,
+2024-01-13,20,Stressful exam period,9,9,7,3.0,Feeling good today.,8.2,2.0,1.0,3.0,2,2.0,2.0,Sad Pop|Other|EDM,1.0,Morning,Yes,No clue,,,
 2024-04-19,31,Stressful exam period,10,6,2,3.0,A bit tired but managing.,7.1,0.0,2.0,2.0,0,1.0,0.0,K–pop / J–pop|EDM,0.0,Afternoon,Yes,PMS,,Follicular,12.0
 2024-01-16,18,Stressful exam period,5,8,6,1.0,A bit tired but managing.,6.6,0.0,0.0,0.0,1,1.0,3.0,Dance music,1.0,Night,No,Ovulation,Food cravings|Cramps,Menstrual (Period),2.0
 2024-05-13,32,Stressful exam period,10,4,10,0.0,A bit tired but managing.,7.1,2.0,2.0,2.0,0,3.0,0.0,Dance music|Carnatic,1.0,Afternoon,No,PMS,,Follicular,8.0
@@ -104,6 +104,7 @@ date,age,major_event_log,mood,anxiety,energy,burnout,journal_entry,sleep,refresh
 2024-03-19,35,Stressful exam period,4,6,6,0.0,A bit tired but managing.,6.4,0.0,3.0,0.0,0,0.0,0.0,Carnatic|Bollywood|Dance music,2.0,Morning,No,Ovulation,,Follicular,9.0
 2024-05-09,19,Stressful exam period,5,8,3,1.0,A bit tired but managing.,4.8,1.0,3.0,0.0,0,3.0,1.0,K–pop / J–pop,1.0,Afternoon,Not sure,PMS,Food cravings|Cramps|Low energy,Menstrual (Period),4.0
 2024-05-10,28,Stressful exam period,8,4,3,1.0,Feeling good today.,7.4,0.0,0.0,1.0,0,3.0,3.0,K–pop / J–pop|Happy Vibey pop,0.0,Night,No,Follicular,Food cravings|Cramps,Menstrual (Period),5.0
-2024-01-06,24,Stressful exam period,8,4,3,0.0,A bit tired but managing.,7.4,2.0,1.0,3.0,0,2.0,2.0,Bollywood,1.0,Night,Yes,PMS,,N/A,
+2024-01-06,24,Stressful exam period,8,4,3,0.0,A bit tired but managing.,7.4,2.0,1.0,3.0,0,2.0,2.0,Bollywood,1.0,Night,Yes,PMS,,,
 2024-05-27,28,Stressful exam period,7,7,8,3.0,A bit tired but managing.,7.0,0.0,2.0,1.0,2,3.0,3.0,Sad Pop|Lofi,2.0,Morning,Not sure,No clue,Cramps,Luteal,22.0
 2024-06-13,21,Stressful exam period,6,5,8,0.0,Feeling good today.,6.6,0.0,1.0,2.0,2,0.0,0.0,Lofi,1.0,Morning,Yes,Ovulation,,Follicular,11.0
+2025-06-11,30,,5,5,5,,"Write about your day, key events, feelings...",7.0,1.0,1.0,1.0,0,1.0,,none,,none,no,N/A,none,Follicular,11.0

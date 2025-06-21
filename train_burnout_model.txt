@@ -1,0 +1,219 @@
+import pandas as pd
+import numpy as np # For potential NaN handling and numerical operations
+from sklearn.model_selection import train_test_split # For splitting data
+from sklearn.preprocessing import StandardScaler, OneHotEncoder # For scaling and encoding
+from sklearn.compose import ColumnTransformer # For applying different transformers to different columns
+from sklearn.pipeline import Pipeline # For chaining steps
+from sklearn.impute import SimpleImputer # For handling missing values
+import joblib # To save/load the trained model and preprocessor
+
+# --- Configuration ---
+TRAINING_DATA_FILE = 'final_combined_training_data.csv' # Your combined dataset
+
+# --- Load the Data ---
+print(f"Loading data from {TRAINING_DATA_FILE}...")
+try:
+    df = pd.read_csv(TRAINING_DATA_FILE)
+    print(f"Successfully loaded {len(df)} rows.")
+    print("Initial DataFrame Info:")
+    df.info()
+    print("\nFirst 5 rows:")
+    print(df.head())
+except FileNotFoundError:
+    print(f"Error: {TRAINING_DATA_FILE} not found. Please ensure you've run 'combine_data_for_training.py'.")
+    exit()
+
+# Convert 'date' column to datetime objects (if not already done consistently)
+# This is mainly for potential time-based feature engineering, not direct model input
+df['date'] = pd.to_datetime(df['date'])
+
+# --- Define Target Variable and Features ---
+# Our target variable (what we want to predict) is 'burnout'
+TARGET_COLUMN = 'burnout'
+y = df[TARGET_COLUMN]
+
+# Features (X) are all other relevant columns
+# We'll drop 'date' and 'journal_entry' for now as they typically require advanced NLP or time-series specific models.
+# 'user_id' is also dropped for now, as we'll train a general model across all users.
+X = df.drop(columns=[TARGET_COLUMN, 'date', 'user_id', 'journal_entry'])
+
+print(f"\nFeatures (X) shape: {X.shape}")
+print(f"Target (y) shape: {y.shape}")
+print("\nFeatures to be processed:")
+print(X.columns.tolist())
+
+# --- Step 2: Identify Column Types for Preprocessing ---
+# This is crucial for applying the right transformations
+
+# Numerical features (will be scaled)
+numerical_features = ['age', 'mood', 'anxiety', 'energy', 'sleep']
+
+# Ordinal categorical features (will be mapped to numbers, then scaled)
+# We need to define the order for these categories.
+# Make sure these lists match the exact string values in your CSV.
+ordinal_features_mapping = {
+    'burnout': ["Not at all", "Mild tiredness", "Drained", "Full-on burnout"], # Target variable, for consistency
+    'refreshed_after_sleep': ['No', 'Kind of', 'Yes'],
+    'steps_taken': ['<2000', '2000–5000', '5000–8000', '8000+'],
+    'water_intake': ['<1L', '1–1.5L', '1.5–2.5L', '2.5L+'],
+    'caffeine_intake': ['None', '1 cup', '2 cups', '3+ cups'],
+    'work_hours': ['<2 hrs', '2–5 hrs', '5–8 hrs', '8+ hrs']
+}
+
+# Nominal categorical features (will be One-Hot encoded)
+nominal_features = ['outfit_type', 'music_volume', 'music_time', 'on_period_today', 'cycle_phase']
+
+# Multi-select categorical features (will be binarized/expanded)
+# These will require custom processing as they are comma-separated strings.
+multi_select_features = ['music_genre', 'symptoms_experienced']
+
+# --- Step 3: Handle Missing Values & Basic Encoding for Ordinal Features ---
+# We'll use a preprocessing pipeline with ColumnTransformer
+
+# Preprocessing for Numerical Features: Impute missing values (if any) with the median, then scale
+numerical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler())
+])
+
+# Preprocessing for Ordinal Features: Map strings to numbers, then scale
+# This requires a custom mapping function or a more advanced pipeline step.
+# For simplicity, let's perform manual mapping outside the ColumnTransformer for now.
+# We will iterate through ordinal_features_mapping and apply the transformations directly to X
+print("\nApplying Ordinal Encoding...")
+for feature, order in ordinal_features_mapping.items():
+    if feature in X.columns:
+        # Create a dictionary for mapping (e.g., {'Not at all': 0, 'Mild tiredness': 1, ...})
+        mapping_dict = {label: i for i, label in enumerate(order)}
+        X[feature] = X[feature].map(mapping_dict)
+        
+        # Handle any NaN values that might remain after mapping (if original value wasn't in order)
+        # For ordinal, impute with mode (most frequent category) or a reasonable default
+        # For now, let's use SimpleImputer for consistency later or fill with -1
+        # It's better to ensure no NaNs before scaling, so we'll add imputer to ColumnTransformer
+    else:
+        print(f"Warning: Ordinal feature '{feature}' not found in X, skipping mapping.")
+
+
+# Preprocessing for Nominal Features: Impute missing values with the most frequent, then One-Hot Encode
+# We also include 'burnout' in target (y) so it's not processed with X nominals.
+nominal_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='most_frequent')), # For categorical NaNs
+    ('onehot', OneHotEncoder(handle_unknown='ignore')) # Handles new categories in test set gracefully
+])
+
+# --- Preprocessing for Multi-Select Features (Binarization) ---
+# This is a bit more involved and often done outside the main ColumnTransformer for clarity.
+# We'll create new binary columns for each possible value.
+print("\nApplying Binarization for Multi-Select Features...")
+all_music_genres = list(set([genre.strip() for sublist in X['music_genre'].dropna().str.split(',') for genre in sublist]))
+all_symptoms = list(set([symptom.strip() for sublist in X['symptoms_experienced'].dropna().str.split(',') for symptom in sublist]))
+
+# Remove 'None' if it's explicitly a separate category, otherwise it will just be 0 for all
+if 'None' in all_music_genres: all_music_genres.remove('None')
+if 'None' in all_symptoms: all_symptoms.remove('None')
+
+
+# Create binary columns for music genres
+for genre in all_music_genres:
+    X[f'music_genre_{genre.replace(" ", "_").replace("-", "_")}'] = X['music_genre'].apply(lambda x: 1 if pd.notna(x) and genre in x else 0)
+
+# Create binary columns for symptoms
+for symptom in all_symptoms:
+    X[f'symptoms_{symptom.replace(" ", "_").replace("-", "_")}'] = X['symptoms_experienced'].apply(lambda x: 1 if pd.notna(x) and symptom in x else 0)
+
+# Drop the original multi-select columns now that they've been expanded
+X = X.drop(columns=multi_select_features)
+
+# Re-check X after manual ordinal and multi-select processing
+print("\nFeatures after initial manual encoding:")
+print(X.columns.tolist())
+X.info()
+
+
+# --- Column Transformer Setup ---
+# Now, define the ColumnTransformer to apply remaining steps
+# We'll use 'passthrough' for already processed ordinal features, or apply a scaler if needed.
+# Let's adjust this to ensure ordinal features are scaled after mapping.
+# numerical_features now also includes the mapped ordinal features for scaling.
+features_to_scale = numerical_features + list(ordinal_features_mapping.keys()) # All numerical & mapped ordinal features
+
+# Adjust imputer strategy for numerical features, and handle 'age' specifically if it has missing values
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numerical_transformer, features_to_scale), # Apply median imputation and scaling to numerical & mapped ordinal
+        ('cat', nominal_transformer, nominal_features)      # Apply mode imputation and one-hot encoding to nominals
+    ],
+    remainder='passthrough' # Keep other columns (like the new binarized ones) as is
+)
+
+# --- Apply Preprocessing ---
+print("\nApplying preprocessing pipeline (imputation, scaling, one-hot encoding)...")
+X_processed = preprocessor.fit_transform(X)
+
+# ColumnTransformer outputs a numpy array, we can convert it back to DataFrame for inspection
+# This step can be complex due to OneHotEncoder outputting variable column names.
+# For now, let's work with the numpy array or simplify for immediate inspection.
+# Get feature names after one-hot encoding for nominals
+nominal_feature_names = preprocessor.named_transformers_['cat'].named_steps['onehot'].get_feature_names_out(nominal_features)
+# Combine all feature names
+all_feature_names = features_to_scale + list(nominal_feature_names) + [col for col in X.columns if col not in features_to_scale + nominal_features] # Add binarized features
+
+# If X_processed is a sparse matrix, convert to dense for DataFrame
+if hasattr(X_processed, 'toarray'):
+    X_processed_df = pd.DataFrame(X_processed.toarray(), columns=all_feature_names, index=X.index)
+else:
+    X_processed_df = pd.DataFrame(X_processed, columns=all_feature_names, index=X.index)
+
+
+print(f"\nProcessed features (X_processed_df) shape: {X_processed_df.shape}")
+print("Processed DataFrame Info:")
+X_processed_df.info()
+print("\nFirst 5 rows of processed features:")
+print(X_processed_df.head())
+
+# --- Step 4: Split Data into Training and Test Sets ---
+print("\nSplitting data into training and testing sets...")
+X_train, X_test, y_train, y_test = train_test_split(X_processed_df, y, test_size=0.2, random_state=42, stratify=y)
+# Using stratify=y is important for classification tasks to maintain target distribution
+
+print(f"X_train shape: {X_train.shape}, y_train shape: {y_train.shape}")
+print(f"X_test shape: {X_test.shape}, y_test shape: {y_test.shape}")
+
+# --- Step 5: Model Selection and Training (Example: A Simple Classifier) ---
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+
+print("\nTraining a Logistic Regression model...")
+# Logistic Regression is a good baseline for classification tasks
+model = LogisticRegression(max_iter=1000, random_state=42, solver='liblinear') # Increased max_iter for convergence
+model.fit(X_train, y_train)
+print("Model training complete.")
+
+# --- Step 6: Model Evaluation ---
+print("\nEvaluating the model...")
+y_pred = model.predict(X_test)
+
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy:.4f}")
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+# --- Step 7: Save the Trained Model and Preprocessor ---
+# It's crucial to save both the model AND the preprocessor.
+# The preprocessor (e.g., StandardScaler, OneHotEncoder) needs to be applied
+# to any new data before it's fed to the trained model.
+MODEL_SAVE_PATH = 'burnout_prediction_model.pkl'
+PREPROCESSOR_SAVE_PATH = 'data_preprocessor.pkl'
+
+joblib.dump(model, MODEL_SAVE_PATH)
+joblib.dump(preprocessor, PREPROCESSOR_SAVE_PATH) # Save the preprocessor
+
+print(f"\nModel saved to {MODEL_SAVE_PATH}")
+print(f"Preprocessor saved to {PREPROCESSOR_SAVE_PATH}")
+
+print("\nML pipeline execution complete. You can now load this model and preprocessor for new predictions.")
