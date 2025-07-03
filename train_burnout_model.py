@@ -15,6 +15,11 @@ import joblib
 # Import feature engineering functions from your processor
 from burnout_data_processor import create_domain_specific_features, create_rolling_features
 
+# For evaluation metrics
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from scipy.stats import randint
+from sklearn.base import BaseEstimator, TransformerMixin # Although BertEmbeddingTransformer might not be directly used if we keep HEAD's text_embedding logic, keep for completeness if it's meant for a future use.
+
 # --- GLOBAL MODEL INITIALIZATION (for NLP features during training) ---
 # These models are initialized ONLY ONCE when train_burnout_model.py is executed.
 print("Initializing global sentiment analysis pipeline...")
@@ -78,8 +83,23 @@ def train_model(TARGET_USER_ID):
     Loads user data, applies feature engineering and preprocessing,
     and trains a RandomForestClassifier using GridSearchCV.
     """
-    # Assuming 'final_combined_training_data.csv' is your comprehensive raw data source
-    df = pd.read_csv('final_combined_training_data.csv')
+    print("Loading data from final_combined_training_data.csv...")
+    try:
+        df = pd.read_csv('final_combined_training_data.csv')
+    except FileNotFoundError:
+        print("Error: 'final_combined_training_data.csv' not found. Please ensure it's in the correct directory.")
+        return None, None
+
+    # --- Start: Integrate burnout column cleaning from remote ---
+    print("\nCleaning 'burnout' column...")
+    burnout_mapping = {
+        'Not at all': 0, 'Mild tiredness': 1, 'Drained': 2, 'Full-on burnout': 3,
+        '0.0': 0, '1.0': 1, '2.0': 2, '3.0': 3
+    }
+    df['burnout'] = df['burnout'].astype(str).map(burnout_mapping)
+    df['burnout'] = pd.to_numeric(df['burnout'], errors='coerce')
+    print(f"Burnout column unique values after initial cleaning: {df['burnout'].unique()}")
+    # --- End: Integrate burnout column cleaning ---
 
     # Filter data for the specific user
     df_user = df[df['user_id'] == TARGET_USER_ID].copy()
@@ -91,11 +111,6 @@ def train_model(TARGET_USER_ID):
     # Sort by date for rolling features
     df_user['date'] = pd.to_datetime(df_user['date'], errors='coerce')
     df_user = df_user.sort_values(by='date').reset_index(drop=True)
-
-    # Convert intake columns to numerical using the processor function
-    # NOTE: The create_domain_specific_features function now handles this correctly by calling convert_intake_to_numeric_value internally.
-    # So you don't need these explicit calls here anymore if create_domain_specific_features is updated.
-    # For now, keeping as is, but consider consolidating.
 
     # Apply feature engineering functions in sequence
     # order matters: domain_specific first to convert categorical columns needed by rolling
@@ -115,7 +130,6 @@ def train_model(TARGET_USER_ID):
         print(f"Error: 'burnout' column not found in data for user {TARGET_USER_ID}.")
         return None, None
     # --- End of Critical Target Variable Handling ---
-
 
     # --- Enhanced Pre-Imputation (before pipeline to handle all-NaN columns) ---
     # These lists should be comprehensive for all expected input features for the CT
@@ -160,9 +174,9 @@ def train_model(TARGET_USER_ID):
     # Ensure 'combined_text' is dropped from X if you are expanding 'text_embedding'
     # 'journal_entry', 'major_event_log', 'symptoms_experienced' should also be dropped
     cols_to_drop_from_X = ['user_id', 'date', 'burnout',
-                           'journal_entry', 'major_event_log', 'symptoms_experienced', # Raw text fields
-                           'combined_text' # The combined text field itself, after embeddings
-                          ]
+                            'journal_entry', 'major_event_log', 'symptoms_experienced', # Raw text fields
+                            'combined_text' # The combined text field itself, after embeddings
+                           ]
     X = df_user.drop(columns=[col for col in cols_to_drop_from_X if col in df_user.columns], errors='ignore')
     y = df_user['burnout']
 
@@ -245,7 +259,7 @@ if __name__ == "__main__":
 
     if trained_model:
         print(f"\nModel for user {TARGET_USER_ID} trained successfully.")
-        
+
         # --- IMPORTANT: Standardized Model Saving Path ---
         MODEL_PATH_FOR_SAVE = 'burnout_prediction_random_forest_model_tuned_with_bert_nlp_and_domain_features_v2.pkl'
         joblib.dump(trained_model, MODEL_PATH_FOR_SAVE)
