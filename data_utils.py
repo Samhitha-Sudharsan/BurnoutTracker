@@ -1,104 +1,139 @@
-# data_utils.py
 import pandas as pd
-import matplotlib.pyplot as plt
-import streamlit as st
-import seaborn as sns # Add this import for better visualizations
+import plotly.express as px
+import plotly.graph_objects as go
+import os # <--- ADD THIS LINE
 
-def load_data(path="cleaned_data.csv"):
-    # Ensure 'date' column is parsed as datetime objects upon loading
-    # and that 'menstrual_phase' and 'cycle_day_of_phase' are loaded correctly
-    df = pd.read_csv(path)
-    df['date'] = pd.to_datetime(df['date']) # Ensure date is datetime for plotting
-    return df
+# This function might already exist, ensure it's here
+def load_data(file_path):
+    """Loads data from a CSV file or creates an empty DataFrame if not found."""
+    if os.path.exists(file_path):
+        df = pd.read_csv(file_path)
+        # Ensure 'date' column is datetime type upon loading
+        if 'date' in df.columns:
+            df['date'] = pd.to_datetime(df['date'], errors='coerce')
+        return df
+    return pd.DataFrame()
 
-def plot_mood_trend(df):
-    fig, ax = plt.subplots(figsize=(10, 5))
-    df.sort_values('date', inplace=True)
-    ax.plot(df['date'], df['mood'], marker='o', linestyle='-', color='skyblue', label='Mood')
-    ax.set_title("Mood Over Time", fontsize=16)
-    ax.set_xlabel("Date", fontsize=12)
-    ax.set_ylabel("Mood Rating", fontsize=12)
-    ax.grid(True, linestyle='--', alpha=0.6)
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    st.pyplot(fig)
+
+## --- Corrected Plotting Functions ---
+
+def plot_mood_trend(df, column_name, title):
+    """
+    Generates a Plotly line chart for a given metric over time.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing the data, with a 'date' column.
+        column_name (str): The name of the column to plot (e.g., 'mood', 'sleep', 'anxiety', 'energy').
+        title (str): The title for the plot.
+
+    Returns:
+        plotly.graph_objects.Figure: A Plotly figure object.
+    """
+    if df.empty or column_name not in df.columns or 'date' not in df.columns:
+        # Return an empty figure or a message if data is not suitable
+        return px.scatter(title=f"No data available for {title}")
+
+    # Ensure 'date' column is datetime type for proper plotting
+    df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    df_sorted = df.sort_values('date')
+
+    fig = px.line(df_sorted, x='date', y=column_name, title=title)
+    fig.update_layout(xaxis_title="Date", yaxis_title=column_name.replace('_', ' ').title())
+    fig.update_traces(mode='lines+markers') # Show both lines and markers for clarity
+
+    return fig
+
 
 def plot_burnout_distribution(df):
-    fig, ax = plt.subplots(figsize=(8, 5))
-    # Order burnout levels if they are numeric or map them for consistent order
-    burnout_order = {0: 'Not at all', 1: 'Mild tiredness', 2: 'Drained', 3: 'Full-on burnout'}
-    # Ensure 'burnout' is treated correctly as categorical or numeric if it's already mapped
-    # If burnout is numeric (0-3), convert to string labels for better bar plot labels
-    if pd.api.types.is_numeric_dtype(df['burnout']):
-        # Map back to string labels for plotting if desired, or plot as numeric
-        # For simplicity, we'll use value_counts on the numeric values
-        burnout_counts = df['burnout'].value_counts().sort_index()
-        burnout_counts.index = burnout_counts.index.map(burnout_order) # Map numeric to descriptive labels
-        burnout_counts.plot(kind='bar', ax=ax, color='lightcoral')
-    else: # If 'burnout' is still categorical strings like 'not at all', 'drained' etc.
-        df['burnout'].value_counts().plot(kind='bar', ax=ax, color='lightcoral')
+    """
+    Generates a Plotly bar chart for burnout level distribution.
 
-    ax.set_title("Burnout Frequency", fontsize=16)
-    ax.set_ylabel("Count", fontsize=12)
-    ax.set_xlabel("Burnout Level", fontsize=12)
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    st.pyplot(fig)
+    Args:
+        df (pd.DataFrame): DataFrame containing the data, with a 'burnout' column.
 
-# --- New Functions for Menstrual Phase Analysis ---
+    Returns:
+        plotly.graph_objects.Figure: A Plotly figure object.
+    """
+    if df.empty or 'burnout' not in df.columns or df['burnout'].isnull().all():
+        return px.bar(title="No burnout data available for distribution.")
+
+    # Map burnout numerical levels to descriptive labels for better visualization
+    burnout_labels = {
+        0: "0 - Not at all",
+        1: "1 - Mild tiredness",
+        2: "2 - Drained",
+        3: "3 - Full-on burnout"
+    }
+    df['burnout_label'] = df['burnout'].map(burnout_labels)
+
+    # Sort categories to ensure correct order on the plot
+    category_order = [burnout_labels[i] for i in sorted(burnout_labels.keys())]
+
+    fig = px.bar(
+        df['burnout_label'].value_counts().reindex(category_order).reset_index(),
+        x='burnout_label',
+        y='count',
+        title="Burnout Level Distribution",
+        labels={'burnout_label': 'Burnout Level', 'count': 'Number of Entries'},
+        color='burnout_label', # Color bars by level
+        color_discrete_map={
+            "0 - Not at all": "green",
+            "1 - Mild tiredness": "lightgreen",
+            "2 - Drained": "orange",
+            "3 - Full-on burnout": "red"
+        }
+    )
+    fig.update_layout(xaxis_title="Burnout Level", yaxis_title="Number of Entries")
+    return fig
+
 
 def plot_average_by_phase(df, column_name, title):
     """
-    Plots the average of a given numerical column by menstrual phase.
+    Generates a Plotly bar chart for average metric by menstrual cycle phase.
+
+    Args:
+        df (pd.DataFrame): DataFrame with 'cycle_phase' and the metric column.
+        column_name (str): The name of the column to average (e.g., 'mood', 'energy').
+        title (str): The title for the plot.
+
+    Returns:
+        plotly.graph_objects.Figure: A Plotly figure object.
     """
-    fig, ax = plt.subplots(figsize=(10, 6))
-    
-    # Ensure 'menstrual_phase' is treated as a category with a defined order for plotting
-    phase_order = ["Menstrual (Period)", "Follicular", "Ovulation", "Luteal", "Luteal (PMS likely)", "N/A", "Unknown/Irregular Cycle", "Not Started"]
-    # Filter out "N/A" and "Not Started" if they contain no meaningful data for averages
-    plot_df = df[df['menstrual_phase'].isin(["Menstrual (Period)", "Follicular", "Ovulation", "Luteal", "Luteal (PMS likely)"])]
-    
-    if not plot_df.empty:
-        # Group by phase and calculate the mean, then sort according to phase_order
-        avg_by_phase = plot_df.groupby('menstrual_phase')[column_name].mean().reindex(phase_order)
-        # Drop NaN values that resulted from reindexing phases that might not exist in the data
-        avg_by_phase = avg_by_phase.dropna() 
-        
-        if not avg_by_phase.empty:
-            sns.barplot(x=avg_by_phase.index, y=avg_by_phase.values, ax=ax, palette='viridis')
-            ax.set_title(title, fontsize=16)
-            ax.set_xlabel("Menstrual Phase", fontsize=12)
-            ax.set_ylabel(f"Average {column_name.replace('_', ' ').title()}", fontsize=12)
-            plt.xticks(rotation=45, ha='right')
-            plt.tight_layout()
-            st.pyplot(fig)
-        else:
-            st.write(f"No data available to plot {title} for recognized menstrual phases.")
-    else:
-        st.write(f"No data available to plot {title} for recognized menstrual phases.")
+    if df.empty or 'cycle_phase' not in df.columns or column_name not in df.columns:
+        return px.bar(title=f"No data available for {title}")
+
+    # Ensure 'cycle_phase' is treated as categorical for correct ordering
+    # Define a specific order for cycle phases for consistent plotting
+    phase_order = ['Period', 'Follicular', 'Ovulatory', 'Luteal', 'Unknown']
+    df['cycle_phase'] = pd.Categorical(df['cycle_phase'], categories=phase_order, ordered=True)
+
+    avg_df = df.groupby('cycle_phase')[column_name].mean().reset_index()
+    avg_df = avg_df.sort_values(by='cycle_phase') # Sort by the defined categorical order
+
+    fig = px.bar(avg_df, x='cycle_phase', y=column_name, title=title,
+                 labels={'cycle_phase': 'Cycle Phase', column_name: f'Average {column_name.replace("_", " ").title()}'},
+                 color='cycle_phase') # Color bars by phase
+
+    fig.update_layout(xaxis_title="Cycle Phase", yaxis_title=f"Average {column_name.replace('_', ' ').title()}")
+    return fig
 
 
 def plot_phase_distribution(df):
     """
-    Plots the distribution (count) of entries across different menstrual phases.
-    """
-    fig, ax = plt.subplots(figsize=(10, 6))
-    
-    # Ensure 'menstrual_phase' is treated as a category with a defined order
-    phase_order = ["Menstrual (Period)", "Follicular", "Ovulation", "Luteal", "Luteal (PMS likely)", "N/A", "Unknown/Irregular Cycle", "Not Started"]
-    
-    # Use value_counts to get the counts for each phase, then reindex to sort
-    phase_counts = df['menstrual_phase'].value_counts().reindex(phase_order, fill_value=0)
-    # Filter out phases with 0 counts if they are not important to display
-    phase_counts = phase_counts[phase_counts > 0]
+    Generates a Plotly pie chart for menstrual cycle phase distribution.
 
-    if not phase_counts.empty:
-        sns.barplot(x=phase_counts.index, y=phase_counts.values, ax=ax, palette='mako')
-        ax.set_title("Data Entries Distribution by Menstrual Phase", fontsize=16)
-        ax.set_xlabel("Menstrual Phase", fontsize=12)
-        ax.set_ylabel("Number of Entries", fontsize=12)
-        plt.xticks(rotation=45, ha='right')
-        plt.tight_layout()
-        st.pyplot(fig)
-    else:
-        st.write("No data available to plot menstrual phase distribution.")
+    Args:
+        df (pd.DataFrame): DataFrame with 'cycle_phase' column.
+
+    Returns:
+        plotly.graph_objects.Figure: A Plotly figure object.
+    """
+    if df.empty or 'cycle_phase' not in df.columns or df['cycle_phase'].isnull().all():
+        return px.pie(title="No cycle phase data available for distribution.")
+
+    phase_counts = df['cycle_phase'].value_counts().reset_index()
+    phase_counts.columns = ['cycle_phase', 'count']
+
+    fig = px.pie(phase_counts, values='count', names='cycle_phase', title='Distribution of Logged Cycle Phases')
+    fig.update_traces(textposition='inside', textinfo='percent+label')
+    return fig

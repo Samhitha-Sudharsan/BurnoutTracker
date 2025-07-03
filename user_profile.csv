@@ -1,0 +1,3 @@
+user_id,age,occupation,alcohol_consumption,drug_use,smoking_habits,contraceptive_pill_use,prior_history_burnout,prior_history_anxiety,living_situation,supportive_environment,liking_study_work_environment
+1,25,Student,,No,No,No,No,No,Alone,Yes,Yes
+real_user_000,25,Student,None,No,No,No,No,No,Alone,Yes,Yes

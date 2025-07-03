@@ -1,333 +1,262 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransformer
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
 from sklearn.ensemble import RandomForestClassifier
-import joblib
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
-from scipy.stats import randint
-# No longer using TfidfVectorizer for text, but keeping it imported for reference
-# from sklearn.feature_extraction.text import TfidfVectorizer
 
-# Import for BERT embeddings
+# Import Hugging Face libraries
+from transformers import pipeline
 from sentence_transformers import SentenceTransformer
+import joblib
 
-# --- NEW: Import BaseEstimator and TransformerMixin ---
-from sklearn.base import BaseEstimator, TransformerMixin
+# Import feature engineering functions from your processor
+from burnout_data_processor import create_domain_specific_features, create_rolling_features
 
-# --- 1. Load Data ---
-print("Loading data from final_combined_training_data.csv...")
-try:
+# --- GLOBAL MODEL INITIALIZATION (for NLP features during training) ---
+# These models are initialized ONLY ONCE when train_burnout_model.py is executed.
+print("Initializing global sentiment analysis pipeline...")
+global_sentiment_pipeline = pipeline("sentiment-analysis")
+print("Global sentiment analysis pipeline loaded.")
+
+print("Initializing global SentenceTransformer model...")
+global_sentence_model = SentenceTransformer('all-MiniLM-L6-v2')
+print("Global SentenceTransformer model loaded.")
+# --- END GLOBAL MODEL INITIALIZATION ---
+
+
+def create_sentiment_features(df):
+    """
+    Creates sentiment scores and sentence embeddings from text fields.
+    Uses globally defined sentiment models.
+    """
+    global global_sentiment_pipeline, global_sentence_model
+
+    # Combine text fields into a single 'combined_text' column BEFORE NLP processing
+    if 'journal_entry' in df.columns and 'major_event_log' in df.columns and 'symptoms_experienced' in df.columns:
+        df['combined_text'] = df['journal_entry'].fillna('') + " " + \
+                              df['major_event_log'].fillna('') + " " + \
+                              df['symptoms_experienced'].fillna('')
+        df['combined_text'] = df['combined_text'].str.strip().replace(r'\s+', ' ', regex=True) # Clean up multiple spaces
+    elif 'combined_text' not in df.columns: # Fallback if individual text columns aren't present
+        df['combined_text'] = '' # Ensure combined_text column exists even if empty
+
+    if 'combined_text' in df.columns:
+        # Fill NaN with empty string to avoid errors in NLP models
+        df['combined_text_clean'] = df['combined_text'].astype(str).replace('nan', '')
+
+        # Apply sentiment analysis
+        sentiment_results = [
+            global_sentiment_pipeline(x)[0] if x else {'score': np.nan, 'label': 'neutral'}
+            for x in df['combined_text_clean']
+        ]
+        df['sentiment_score'] = [s['score'] for s in sentiment_results]
+        df['sentiment_label'] = [s['label'] for s in sentiment_results]
+
+        # Apply sentence embeddings
+        non_empty_text_indices = df[df['combined_text_clean'].str.len() > 0].index
+        if not non_empty_text_indices.empty:
+            valid_texts = df.loc[non_empty_text_indices, 'combined_text_clean'].tolist()
+            embeddings = global_sentence_model.encode(valid_texts)
+            # Create a temporary Series for embeddings to align indices
+            embedding_series = pd.Series(list(embeddings), index=non_empty_text_indices)
+            # Assign to a new column, ensuring it's object dtype
+            df['text_embedding'] = pd.Series(dtype=object) # Initialize with object dtype
+            df.loc[non_empty_text_indices, 'text_embedding'] = embedding_series
+        else:
+            df['text_embedding'] = [np.nan] * len(df) # Fill with NaNs if no valid text
+
+        df.drop(columns=['combined_text_clean'], inplace=True)
+    return df
+# --- END FEATURE ENGINEERING FUNCTIONS ---
+
+
+def train_model(TARGET_USER_ID):
+    """
+    Loads user data, applies feature engineering and preprocessing,
+    and trains a RandomForestClassifier using GridSearchCV.
+    """
+    # Assuming 'final_combined_training_data.csv' is your comprehensive raw data source
     df = pd.read_csv('final_combined_training_data.csv')
-    print("Data loaded successfully.")
-    print(f"Initial DataFrame shape: {df.shape}")
-    print("Initial DataFrame columns:", df.columns.tolist())
-except FileNotFoundError:
-    print("Error: 'final_combined_training_data.csv' not found. Please ensure the file is in the correct directory.")
-    exit()
 
-# --- 2. Data Preprocessing ---
+    # Filter data for the specific user
+    df_user = df[df['user_id'] == TARGET_USER_ID].copy()
 
-# Clean the 'burnout' column (target variable)
-print("\nCleaning 'burnout' column...")
-burnout_mapping = {
-    'Not at all': 0, 'Mild tiredness': 1, 'Drained': 2, 'Full-on burnout': 3,
-    '0.0': 0, '1.0': 1, '2.0': 2, '3.0': 3
-}
-df['burnout'] = df['burnout'].astype(str).map(burnout_mapping)
-df['burnout'] = pd.to_numeric(df['burnout'], errors='coerce')
-print(f"Burnout column unique values after initial cleaning: {df['burnout'].unique()}")
+    if df_user.empty:
+        print(f"No data found for user ID: {TARGET_USER_ID}")
+        return None, None
 
-# Convert 'date' to datetime for temporal features
-if 'date' in df.columns:
-    df['date'] = pd.to_datetime(df['date'], errors='coerce')
-    initial_rows_temp = len(df)
-    df.dropna(subset=['date'], inplace=True)
-    if len(df) < initial_rows_temp:
-        print(f"Dropped {initial_rows_temp - len(df)} rows due to NaN in 'date' column for temporal features.")
-    print("Converted 'date' column to datetime and handled NaNs.")
-else:
-    print("Warning: 'date' column not found in DataFrame. Cannot create temporal features.")
+    # Sort by date for rolling features
+    df_user['date'] = pd.to_datetime(df_user['date'], errors='coerce')
+    df_user = df_user.sort_values(by='date').reset_index(drop=True)
 
-# Define numerical, categorical, and original text columns
-numerical_cols = ['age', 'mood', 'anxiety', 'energy', 'sleep']
+    # Convert intake columns to numerical using the processor function
+    # NOTE: The create_domain_specific_features function now handles this correctly by calling convert_intake_to_numeric_value internally.
+    # So you don't need these explicit calls here anymore if create_domain_specific_features is updated.
+    # For now, keeping as is, but consider consolidating.
 
-categorical_cols = [
-    'refreshed_after_sleep', 'steps_taken', 'water_intake',
-    'caffeine_intake', 'work_hours',
-    'outfit_type', 'music_volume', 'music_time', 'on_period_today',
-    'cycle_phase', 'symptoms_experienced', 'music_genre'
-]
+    # Apply feature engineering functions in sequence
+    # order matters: domain_specific first to convert categorical columns needed by rolling
+    df_user = create_domain_specific_features(df_user)
+    df_user = create_rolling_features(df_user)
+    df_user = create_sentiment_features(df_user) # This also creates 'combined_text' if needed
 
-user_profile_columns = [
-    'occupation', 'alcohol_consumption', 'prior_burnout_anxiety',
-    'living_situation', 'supportive_environment',
-    'liking_study_work_environment', 'contraceptive_pill_use',
-    'drug_use_smoking_habits'
-]
-for col in user_profile_columns:
-    if col in df.columns and df[col].dtype == 'object':
-        categorical_cols.append(col)
+    # --- Start of Critical Target Variable Handling ---
+    if 'burnout' in df_user.columns:
+        df_user['burnout'] = pd.to_numeric(df_user['burnout'], errors='coerce')
+        initial_rows = len(df_user)
+        df_user.dropna(subset=['burnout'], inplace=True)
+        if len(df_user) < initial_rows:
+            print(f"Warning: Dropped {initial_rows - len(df_user)} rows due to NaN in 'burnout' for user {TARGET_USER_ID}.")
+        df_user['burnout'] = df_user['burnout'].astype(int)
+    else:
+        print(f"Error: 'burnout' column not found in data for user {TARGET_USER_ID}.")
+        return None, None
+    # --- End of Critical Target Variable Handling ---
 
-# Original text columns to be concatenated
-original_text_cols = ['journal_entry', 'major_event_log']
 
-# Filter lists to ensure columns actually exist in the DataFrame
-numerical_cols = [col for col in numerical_cols if col in df.columns]
-categorical_cols = [col for col in categorical_cols if col in df.columns]
-original_text_cols = [col for col in original_text_cols if col in df.columns]
+    # --- Enhanced Pre-Imputation (before pipeline to handle all-NaN columns) ---
+    # These lists should be comprehensive for all expected input features for the CT
+    # This assumes 'sleep', 'mood', 'anxiety', 'energy', 'age', 'work_hours', 'steps_taken', 'music_time' are direct numerical inputs
+    numerical_cols_to_check = [
+        'sleep', 'mood', 'anxiety', 'energy', 'age', 'work_hours', 'steps_taken', 'music_time',
+        'water_intake', 'caffeine_intake',
+        'contraceptive_pill_use_encoded', 'prior_history_burnout_encoded',
+        'prior_history_anxiety_encoded', 'drug_use_encoded', 'smoking_habits_encoded',
+        'alcohol_consumption_encoded', 'supportive_environment_encoded',
+        'liking_study_work_environment_encoded',
+        'insufficient_sleep', 'excessive_sleep', 'is_sleep_deprived',
+        'low_mood', 'high_anxiety', 'low_energy',
+        'heavy_alcohol_consumption', 'drug_use_smoking_habits', 'drug_use_or_smoking_present',
+        'low_mood_luteal_interaction', 'low_energy_luteal_interaction',
+        'prior_issues_interaction',
+        'mood_3day_avg', 'mood_3day_std', 'mood_7day_avg', 'mood_7day_std',
+        'sleep_3day_avg', 'sleep_3day_std', 'sleep_7day_avg', 'sleep_7day_std',
+        'anxiety_3day_avg', 'anxiety_3day_std', 'anxiety_7day_avg', 'anxiety_7day_std',
+        'energy_3day_avg', 'energy_3day_std', 'energy_7day_avg', 'energy_7day_std',
+        'sentiment_score' # Numeric sentiment score
+    ]
 
-print(f"\nIdentified Numerical Columns: {numerical_cols}")
-print(f"Identified Categorical Columns: {categorical_cols}")
-print(f"Original Text Columns for Concatenation: {original_text_cols}")
+    categorical_cols_to_check = [
+        'refreshed_after_sleep', 'outfit_type', 'music_genre', 'music_volume',
+        'on_period_today', 'cycle_phase', 'occupation', 'living_situation',
+        'sentiment_label' # Categorical sentiment label
+    ]
 
-# --- Temporal Feature Engineering ---
-print("\nInitiating Temporal Feature Engineering...")
-temporal_cols_to_process = ['mood', 'anxiety', 'energy', 'sleep']
-temporal_cols_to_process = [col for col in temporal_cols_to_process if col in df.columns and pd.api.types.is_numeric_dtype(df[col])]
+    for col in numerical_cols_to_check:
+        if col in df_user.columns:
+            if df_user[col].isnull().all():
+                df_user[col] = df_user[col].fillna(0.0) # Fill with 0 for numerical all-NaNs
 
-if 'user_id' in df.columns and 'date' in df.columns and temporal_cols_to_process:
-    df.sort_values(by=['user_id', 'date'], inplace=True)
-    print("DataFrame sorted for temporal feature calculation.")
-    for col in temporal_cols_to_process:
-        df[f'{col}_3day_avg'] = df.groupby('user_id')[col].rolling(window=3, min_periods=1).mean().reset_index(level=0, drop=True)
-        df[f'{col}_3day_std'] = df.groupby('user_id')[col].rolling(window=3, min_periods=1).std().reset_index(level=0, drop=True)
-        df[f'{col}_7day_avg'] = df.groupby('user_id')[col].rolling(window=7, min_periods=1).mean().reset_index(level=0, drop=True)
-        df[f'{col}_7day_std'] = df.groupby('user_id')[col].rolling(window=7, min_periods=1).std().reset_index(level=0, drop=True)
-    print("Temporal feature engineering complete.")
-else:
-    print("Skipping temporal feature engineering: Missing 'user_id', 'date' or no relevant numerical columns for temporal processing.")
+    for col in categorical_cols_to_check:
+        if col in df_user.columns:
+            if df_user[col].isnull().all():
+                df_user[col] = df_user[col].fillna('__MISSING__') # Fill with a placeholder string for categorical all-NaNs
+    # --- End of Enhanced Pre-Imputation ---
 
-# Update numerical_cols to include newly created temporal features
-newly_created_temporal_features = []
-for col in temporal_cols_to_process:
-    newly_created_temporal_features.extend([
-        f'{col}_3day_avg', f'{col}_3day_std',
-        f'{col}_7day_avg', f'{col}_7day_std'
+    # Define features (X) and target (y)
+    # Ensure 'combined_text' is dropped from X if you are expanding 'text_embedding'
+    # 'journal_entry', 'major_event_log', 'symptoms_experienced' should also be dropped
+    cols_to_drop_from_X = ['user_id', 'date', 'burnout',
+                           'journal_entry', 'major_event_log', 'symptoms_experienced', # Raw text fields
+                           'combined_text' # The combined text field itself, after embeddings
+                          ]
+    X = df_user.drop(columns=[col for col in cols_to_drop_from_X if col in df_user.columns], errors='ignore')
+    y = df_user['burnout']
+
+    # --- START: Handling 'text_embedding' expansion ---
+    # NOTE: Ensure global_sentence_model is loaded if you run this outside __main__ or as a script
+    EMBEDDING_DIMENSION = global_sentence_model.get_sentence_embedding_dimension() if global_sentence_model else 384 # Default to 384 if not loaded
+
+    if 'text_embedding' in X.columns:
+        valid_embeddings = X['text_embedding'].dropna()
+        if not valid_embeddings.empty:
+            embeddings_df = pd.DataFrame(valid_embeddings.tolist(), index=valid_embeddings.index)
+            # Ensure column names are unique and reflect the embedding dimension
+            embeddings_df.columns = [f'text_embedding_{i}' for i in range(embeddings_df.shape[1])]
+            X = pd.concat([X.drop(columns=['text_embedding']), embeddings_df], axis=1)
+        else:
+            # If 'text_embedding' exists but is all NaN, drop it and add zero vectors
+            X = X.drop(columns=['text_embedding'])
+            zero_embeddings_df = pd.DataFrame(0.0, index=X.index, columns=[f'text_embedding_{i}' for i in range(EMBEDDING_DIMENSION)])
+            X = pd.concat([X, zero_embeddings_df], axis=1)
+    else:
+        # If 'text_embedding' was never created, add zero vectors
+        zero_embeddings_df = pd.DataFrame(0.0, index=X.index, columns=[f'text_embedding_{i}' for i in range(EMBEDDING_DIMENSION)])
+        X = pd.concat([X, zero_embeddings_df], axis=1)
+    # --- END: Handling 'text_embedding' expansion ---
+
+
+    # Identify numerical and categorical features for ColumnTransformer after embedding expansion
+    # This is important: re-select columns after embedding expansion
+    numerical_features = X.select_dtypes(include=np.number).columns.tolist()
+    categorical_features = X.select_dtypes(include='object').columns.tolist()
+
+    numerical_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='mean')),
+        ('scaler', StandardScaler())
     ])
-numerical_cols.extend([f for f in newly_created_temporal_features if f in df.columns])
-numerical_cols = list(set(numerical_cols)) # Remove potential duplicates
 
-# --- Combine Text Columns for NLP ---
-# Fill NaN values in original text columns with empty strings before concatenation
-for col in original_text_cols:
-    if col in df.columns:
-        df[col] = df[col].fillna('')
+    categorical_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('onehot', OneHotEncoder(handle_unknown='ignore'))
+    ])
 
-if original_text_cols:
-    print(f"\nConcatenating {original_text_cols} into a single 'combined_text' column.")
-    df['combined_text'] = df[original_text_cols].agg(' '.join, axis=1)
-    text_cols_for_vectorization = ['combined_text']
-    print(f"'combined_text' column created with shape: {df['combined_text'].shape}")
-else:
-    text_cols_for_vectorization = []
-    print("\nNo original text columns found to combine for NLP.")
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', numerical_transformer, numerical_features),
+            ('cat', categorical_transformer, categorical_features)
+        ],
+        remainder='passthrough' # Keep any columns not explicitly transformed (e.g., if there are new ones)
+    )
 
-# --- 3. Define Target Variable and Features ---
-TARGET_COLUMN = 'burnout'
+    pipeline = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('classifier', RandomForestClassifier(random_state=42))
+    ])
 
-# Drop rows where the target variable is NaN
-initial_rows = len(df)
-df.dropna(subset=[TARGET_COLUMN], inplace=True)
-rows_after_nan_drop = len(df)
-if initial_rows - rows_after_nan_drop > 0:
-    print(f"\nDropped {initial_rows - rows_after_nan_drop} rows due to NaN in '{TARGET_COLUMN}' column after conversion.")
-    print(f"Remaining rows: {rows_after_nan_drop}")
+    param_grid = {
+        'classifier__n_estimators': [100, 200],
+        'classifier__max_depth': [10, 20, None],
+        'classifier__min_samples_leaf': [1, 2],
+        'classifier__min_samples_split': [2, 5],
+        'classifier__class_weight': [None, 'balanced']
+    }
 
-# Assign target variable y
-y = df[TARGET_COLUMN].astype(int)
+    grid_search = GridSearchCV(pipeline, param_grid, cv=5, verbose=2, n_jobs=-1, scoring='accuracy')
+    grid_search.fit(X, y)
 
-# Define X based on df.
-# Exclude 'date', 'user_id', original text columns, and the target column itself.
-# The new 'combined_text' column will be included in X.
-columns_to_drop_from_X = [TARGET_COLUMN, 'date', 'user_id'] + original_text_cols
-X = df.drop(columns=columns_to_drop_from_X, errors='ignore')
+    print(f"\n--- Results for User: {TARGET_USER_ID} ---")
+    print(f"Best parameters: {grid_search.best_params_}")
+    print(f"Best cross-validation accuracy: {grid_search.best_score_:.4f}")
 
-# Align X with y by index
-X = X.loc[y.index]
-
-print(f"\nFeatures (X) shape after final selection: {X.shape}")
-print(f"Target (y) shape after final selection: {y.shape}")
-
-# --- NEW: Custom Transformer for BERT Embeddings ---
-class BertEmbeddingTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self, model_name='all-MiniLM-L6-v2'):
-        self.model_name = model_name
-        self.model = None
-
-    def fit(self, X, y=None):
-        # Load the model during fit to ensure it's loaded only once
-        # 'all-MiniLM-L6-v2' is a good balance of size and performance
-        self.model = SentenceTransformer(self.model_name)
-        return self
-
-    def transform(self, X):
-        if self.model is None:
-            # This case should ideally not happen if fit is called first
-            self.model = SentenceTransformer(self.model_name)
-
-        # X is expected to be a pandas Series or 1D array of strings
-        # Ensure input is a list of strings
-        texts = X.iloc[:, 0].tolist() if isinstance(X, pd.DataFrame) else X.tolist()
-
-        # Generate embeddings
-        embeddings = self.model.encode(texts, show_progress_bar=False, convert_to_numpy=True)
-        return embeddings
-
-    # For ColumnTransformer to get feature names
-    def get_feature_names_out(self, input_features=None):
-        # The dimension of embeddings from 'all-MiniLM-L6-v2' is 384
-        # You might need to check this for other models
-        embedding_dim = 384 # Default for 'all-MiniLM-L6-v2'
-        return [f"bert_embed_{i}" for i in range(embedding_dim)]
+    best_model = grid_search.best_estimator_
+    return best_model, X.columns.tolist() # Return as list for easier saving/consistency
 
 
-# --- 4. Column Transformer Setup ---
-numerical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='median')),
-    ('scaler', StandardScaler())
-])
+# --- Main execution block for train_burnout_model.py ---
+if __name__ == "__main__":
+    TARGET_USER_ID = 'real_user_000' # Example user ID for training data
+    print(f"\nStarting model training for user: {TARGET_USER_ID}")
 
-categorical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='constant', fill_value='Unknown_Category')),
-    ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
-])
+    trained_model, feature_names_at_fit = train_model(TARGET_USER_ID)
 
-# NEW: Use BertEmbeddingTransformer for text features
-bert_text_transformer = Pipeline(steps=[
-    ('bert_embedder', BertEmbeddingTransformer())
-])
+    if trained_model:
+        print(f"\nModel for user {TARGET_USER_ID} trained successfully.")
+        
+        # --- IMPORTANT: Standardized Model Saving Path ---
+        MODEL_PATH_FOR_SAVE = 'burnout_prediction_random_forest_model_tuned_with_bert_nlp_and_domain_features_v2.pkl'
+        joblib.dump(trained_model, MODEL_PATH_FOR_SAVE)
+        print(f"Model saved to: {MODEL_PATH_FOR_SAVE}")
 
-# Filter numerical_cols, categorical_cols, and text_cols_for_vectorization to ensure they are present in X
-features_to_scale_actual = [f for f in numerical_cols if f in X.columns]
-features_to_encode_actual = [f for f in categorical_cols if f in X.columns]
-# For BERT, we only need the 'combined_text' column
-features_to_vectorize_actual = [f for f in text_cols_for_vectorization if f in X.columns]
+        # It's good practice to save the feature names the model was trained on
+        # You might not use this in predict.py directly, but it's invaluable for debugging
+        # or verifying inputs if the pipeline changes.
+        FEATURE_NAMES_PATH_FOR_SAVE = 'feature_names_for_burnout_model_v2.pkl'
+        joblib.dump(feature_names_at_fit, FEATURE_NAMES_PATH_FOR_SAVE)
+        print(f"Feature names saved to: {FEATURE_NAMES_PATH_FOR_SAVE}")
 
-
-print(f"\nFinal numerical features for scaling: {features_to_scale_actual}")
-print(f"Final categorical features for encoding: {features_to_encode_actual}")
-print(f"Final text features for BERT vectorization: {features_to_vectorize_actual}")
-
-
-transformers_list = []
-if features_to_scale_actual:
-    transformers_list.append(('num', numerical_transformer, features_to_scale_actual))
-if features_to_encode_actual:
-    transformers_list.append(('cat', categorical_transformer, features_to_encode_actual))
-if features_to_vectorize_actual:
-    # NEW: Use bert_text_transformer instead of the old text_transformer
-    transformers_list.append(('text', bert_text_transformer, features_to_vectorize_actual))
-
-if not transformers_list:
-    print("Error: No features available for preprocessing. Exiting.")
-    exit()
-
-preprocessor = ColumnTransformer(
-    transformers=transformers_list,
-    remainder='drop'
-)
-
-# --- 5. Apply Preprocessing ---
-print("\nApplying final preprocessing pipeline (including BERT embeddings for combined text data)...")
-# Note: The first time BertEmbeddingTransformer runs, it will download the model.
-# This download might take some time and requires an internet connection.
-X_processed = preprocessor.fit_transform(X)
-
-# Get feature names after preprocessing
-all_feature_names = []
-if 'num' in preprocessor.named_transformers_ and features_to_scale_actual:
-    all_feature_names.extend(preprocessor.named_transformers_['num'].named_steps['scaler'].get_feature_names_out(features_to_scale_actual))
-if 'cat' in preprocessor.named_transformers_ and features_to_encode_actual:
-    all_feature_names.extend(preprocessor.named_transformers_['cat'].named_steps['onehot'].get_feature_names_out(features_to_encode_actual))
-if 'text' in preprocessor.named_transformers_ and features_to_vectorize_actual:
-    # NEW: Get feature names from the custom BertEmbeddingTransformer
-    all_feature_names.extend(preprocessor.named_transformers_['text'].named_steps['bert_embedder'].get_feature_names_out(features_to_vectorize_actual))
-
-
-# Convert to DataFrame, preserving index
-X_processed_df = pd.DataFrame(X_processed, columns=all_feature_names, index=X.index)
-
-print(f"\nProcessed features (X_processed_df) shape: {X_processed_df.shape}")
-print("Processed DataFrame Info:")
-X_processed_df.info()
-print("\nFirst 5 rows of processed features (note BERT embeddings):")
-print(X_processed_df.head())
-print("\nFinal check for NaNs in X_processed_df (should be 0 for all columns):")
-print(X_processed_df.isnull().sum().sum())
-
-
-# --- 6. Split Data into Training and Test Sets ---
-print("\nSplitting data into training and testing sets...")
-X_train, X_test, y_train, y_test = train_test_split(X_processed_df, y, test_size=0.2, random_state=42, stratify=y)
-
-print(f"X_train shape: {X_train.shape}, y_train shape: {y_train.shape}")
-print(f"X_test shape: {X_test.shape}, y_test shape: {y_test.shape}")
-
-# --- 7. Model Selection and Hyperparameter Tuning (RandomizedSearchCV) ---
-print("\nInitiating RandomForestClassifier Hyperparameter Tuning with RandomizedSearchCV (including BERT NLP features)...")
-
-# Define the parameter distribution to sample from
-param_distributions = {
-    'n_estimators': randint(100, 500),
-    'max_features': ['sqrt', 'log2'],
-    'max_depth': randint(10, 50),
-    'min_samples_split': randint(2, 20),
-    'min_samples_leaf': randint(1, 10),
-    'criterion': ['gini', 'entropy']
-}
-
-# Create a RandomForestClassifier base model
-rf_model = RandomForestClassifier(class_weight='balanced', random_state=42)
-
-# Setup RandomizedSearchCV
-random_search = RandomizedSearchCV(
-    estimator=rf_model,
-    param_distributions=param_distributions,
-    n_iter=50, # You might increase this for more thorough search
-    cv=5,
-    verbose=2,
-    random_state=42,
-    n_jobs=-1,
-    scoring='f1_weighted'
-)
-
-# Fit RandomizedSearchCV to the training data
-random_search.fit(X_train, y_train)
-
-print("\nRandomizedSearchCV complete.")
-print(f"Best parameters found: {random_search.best_params_}")
-print(f"Best cross-validation score (f1_weighted): {random_search.best_score_:.4f}")
-
-# Get the best model
-best_model = random_search.best_estimator_
-
-# --- 8. Model Evaluation ---
-print("\nEvaluating the best model on the test set...")
-y_pred = best_model.predict(X_test)
-
-accuracy = accuracy_score(y_test, y_pred)
-print(f"Accuracy on test set: {accuracy:.4f}")
-
-print("\nClassification Report (Best Model from RandomizedSearchCV):")
-print(classification_report(y_test, y_pred))
-
-print("\nConfusion Matrix (Best Model from RandomizedSearchCV):")
-print(confusion_matrix(y_test, y_pred))
-
-# --- 9. Save the Trained Model and Preprocessor ---
-MODEL_SAVE_PATH = 'burnout_prediction_random_forest_model_tuned_with_bert_nlp.pkl'
-PREPROCESSOR_SAVE_PATH = 'data_preprocessor_for_random_forest_tuned_with_bert_nlp.pkl'
-
-joblib.dump(best_model, MODEL_SAVE_PATH)
-joblib.dump(preprocessor, PREPROCESSOR_SAVE_PATH)
-
-print(f"\nBest model saved to {MODEL_SAVE_PATH}")
-print(f"Preprocessor saved to {PREPROCESSOR_SAVE_PATH}")
-
-print("\nML pipeline execution complete with RandomForestClassifier (tuned with RandomizedSearchCV), temporal features, and BERT NLP features.")
-print(f"Target accuracy: 0.70. Achieved accuracy: {accuracy:.4f}")
-print("Review the classification report above to assess performance across classes.")
+    else:
+        print(f"Failed to train model for user {TARGET_USER_ID}.")
